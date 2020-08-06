@@ -1,0 +1,5 @@
+name: PunishmentNotifier
+main: net.okocraft.punishmentnotifier.PunishmentNotifier
+version: ${project.version}
+author: Siroshun09
+depend: [AdvancedBan]
