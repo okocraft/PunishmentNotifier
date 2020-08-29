@@ -11,7 +11,7 @@
 
     <name>PunishmentNotifier</name>
     <url>https://github.com/okocraft/PunishmentNotifier</url>
-    <description>A BungeeCord plugin that connects LunaChat and Discord</description>
+    <description>A BungeeCord plugin that sends AdvancedBan punishment information to the Discord.</description>
 
     <licenses>
         <license>
