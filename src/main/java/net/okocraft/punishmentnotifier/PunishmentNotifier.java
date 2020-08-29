@@ -12,6 +12,7 @@ public class PunishmentNotifier extends Plugin {
 
     private BungeeConfig config;
     private WebhookClient webhook;
+    private DiscordNotifier discordNotifier;
     private PlayerNotifier playerNotifier;
 
     @Override
@@ -29,7 +30,7 @@ public class PunishmentNotifier extends Plugin {
         }
 
         getLogger().info("Creating webhook client...");
-        createWebhook(url);
+        discordNotifier = new DiscordNotifier(config.getString("discord-webhook-url"));
 
         getLogger().info("Registering listeners...");
         registerListeners();
@@ -39,9 +40,7 @@ public class PunishmentNotifier extends Plugin {
 
     @Override
     public void onDisable() {
-        if (webhook != null && !webhook.isShutdown()) {
-            webhook.close();
-        }
+        discordNotifier.shutdown();
 
         unregisterListeners();
         getProxy().getPluginManager().unregisterCommands(this);
@@ -50,6 +49,10 @@ public class PunishmentNotifier extends Plugin {
 
     public WebhookClient getWebhook() {
         return webhook;
+    }
+
+    public DiscordNotifier getDiscordNotifier() {
+        return discordNotifier;
     }
 
     public PlayerNotifier getPlayerNotifier() {
@@ -90,10 +93,6 @@ public class PunishmentNotifier extends Plugin {
 
             unregisterListeners();
 
-            if (!webhook.isShutdown()) {
-                webhook.close();
-            }
-
             config.reload();
 
             String url = config.getString("discord-webhook-url");
@@ -103,7 +102,7 @@ public class PunishmentNotifier extends Plugin {
                 return;
             }
 
-            createWebhook(url);
+            discordNotifier.restart(url);
             registerListeners();
         }
     }
