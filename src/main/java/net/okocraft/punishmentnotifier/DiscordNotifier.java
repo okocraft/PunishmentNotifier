@@ -20,11 +20,11 @@ public class DiscordNotifier {
         if (p.getDuration(true).equalsIgnoreCase("permanent")) {
             // [被処罰者] タイプ 理由 #ID (By 処罰者)
             log = "[`" + p.getName() + "`] " + p.getType().getName() + " " + p.getReason() +
-                    " #" + p.getId() + "(By " + p.getOperator() + ")";
+                    " #" + p.getId() + " (By " + p.getOperator() + ")";
         } else {
             // [被処罰者] タイプ 期間 理由 #ID (By 処罰者)
             log = "[`" + p.getName() + "`] " + p.getType().getName() + " " + p.getDuration(true)
-                    + " " + p.getReason() + " #" + p.getId() + "(By " + p.getOperator() + ")";
+                    + " " + p.getReason() + " #" + p.getId() + " (By " + p.getOperator() + ")";
         }
 
         webhook.send(log);
