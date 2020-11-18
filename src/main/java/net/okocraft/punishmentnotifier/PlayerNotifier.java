@@ -1,7 +1,7 @@
 package net.okocraft.punishmentnotifier;
 
-import com.github.siroshun09.configapi.bungee.BungeeYaml;
-import com.github.siroshun09.configapi.common.Yaml;
+import com.github.siroshun09.configapi.bungee.BungeeYamlFactory;
+import com.github.siroshun09.configapi.common.yaml.Yaml;
 import me.leoko.advancedban.manager.PunishmentManager;
 import me.leoko.advancedban.utils.Punishment;
 import net.md_5.bungee.api.ChatColor;
@@ -11,7 +11,9 @@ import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
 
 public class PlayerNotifier implements Listener {
 
@@ -20,7 +22,7 @@ public class PlayerNotifier implements Listener {
 
     public PlayerNotifier(PunishmentNotifier plugin) {
         this.plugin = plugin;
-        this.yaml = new BungeeYaml(plugin.getDataFolder().toPath().resolve("data.yml"));
+        this.yaml = BungeeYamlFactory.loadUnsafe(plugin.getDataFolder().toPath().resolve("data.yml"));
     }
 
     @EventHandler
@@ -32,7 +34,7 @@ public class PlayerNotifier implements Listener {
             return;
         }
 
-        int id = yaml.getInt(strUuid, -1);
+        int id = yaml.getInteger(strUuid, -1);
         if (id != -1) {
             PunishmentManager pm = PunishmentManager.get();
             Punishment p = pm.getPunishment(id);
@@ -65,8 +67,10 @@ public class PlayerNotifier implements Listener {
     }
 
     private void save() {
-        if (!yaml.save()) {
-            plugin.getLogger().warning("Could not save data.yml.");
+        try {
+            yaml.save();
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.SEVERE, "Could not save to config.yml", e);
         }
     }
 }

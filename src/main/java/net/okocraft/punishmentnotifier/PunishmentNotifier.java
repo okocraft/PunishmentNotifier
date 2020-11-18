@@ -1,14 +1,18 @@
 package net.okocraft.punishmentnotifier;
 
-import com.github.siroshun09.configapi.bungee.BungeeConfig;
+import com.github.siroshun09.configapi.bungee.BungeeYamlFactory;
+import com.github.siroshun09.configapi.common.yaml.Yaml;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Command;
 import net.md_5.bungee.api.plugin.Plugin;
 
+import java.io.IOException;
+import java.util.logging.Level;
+
 public class PunishmentNotifier extends Plugin {
 
-    private BungeeConfig config;
+    private Yaml config;
     private DiscordNotifier discordNotifier;
     private PlayerNotifier playerNotifier;
 
@@ -17,7 +21,7 @@ public class PunishmentNotifier extends Plugin {
         getProxy().getPluginManager().registerCommand(this, new ReloadCommand());
 
         getLogger().info("Loading config.yml...");
-        config = new BungeeConfig(this, "config.yml", true);
+        config = BungeeYamlFactory.loadUnsafe(this, "config.yml");
 
         String url = config.getString("discord-webhook-url");
 
@@ -76,7 +80,13 @@ public class PunishmentNotifier extends Plugin {
 
             unregisterListeners();
 
-            config.reload();
+            try {
+                config.reload();
+            } catch (IOException e) {
+                getLogger().log(Level.SEVERE, "Could not reload config.yml", e);
+                sender.sendMessage(TextComponent.fromLegacyText("Could not reload config.yml. Please check the console."));
+                return;
+            }
 
             String url = config.getString("discord-webhook-url");
 
