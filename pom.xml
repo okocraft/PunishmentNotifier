@@ -78,6 +78,10 @@
                     <groupId>org.bstats</groupId>
                     <artifactId>bstats-bukkit</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.bstats</groupId>
+                    <artifactId>bstats-bungeecord</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <!-- Discord-Webhooks https://bintray.com/minndevelopment/maven/discord-webhooks/_latestVersion -->
