@@ -73,6 +73,12 @@
             <artifactId>AdvancedBan</artifactId>
             <version>v2.3.0</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.bstats</groupId>
+                    <artifactId>bstats-bukkit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Discord-Webhooks https://bintray.com/minndevelopment/maven/discord-webhooks/_latestVersion -->
         <dependency>
