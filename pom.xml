@@ -88,7 +88,7 @@
         <dependency>
             <groupId>club.minnced</groupId>
             <artifactId>discord-webhooks</artifactId>
-            <version>0.5.3</version>
+            <version>0.5.4</version>
             <scope>compile</scope>
         </dependency>
         <!-- ConfigAPI https://bintray.com/siroshun09/maven/ConfigAPI/_latestVersion -->
