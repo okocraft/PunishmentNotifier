@@ -41,7 +41,9 @@ public class PunishmentNotifier extends Plugin {
 
     @Override
     public void onDisable() {
-        discordNotifier.shutdown();
+        if (discordNotifier != null) {
+            discordNotifier.shutdown();
+        }
 
         unregisterListeners();
         getProxy().getPluginManager().unregisterCommands(this);
