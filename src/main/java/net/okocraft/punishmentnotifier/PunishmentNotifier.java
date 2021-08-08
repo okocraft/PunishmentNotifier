@@ -1,7 +1,6 @@
 package net.okocraft.punishmentnotifier;
 
-import com.github.siroshun09.configapi.bungee.BungeeYamlFactory;
-import com.github.siroshun09.configapi.common.yaml.Yaml;
+import com.github.siroshun09.configapi.yaml.YamlConfiguration;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Command;
@@ -12,7 +11,7 @@ import java.util.logging.Level;
 
 public class PunishmentNotifier extends Plugin {
 
-    private Yaml config;
+    private final YamlConfiguration config = YamlConfiguration.create(getDataFolder().toPath().resolve("config.yml"));
     private DiscordNotifier discordNotifier;
     private PlayerNotifier playerNotifier;
 
@@ -21,7 +20,13 @@ public class PunishmentNotifier extends Plugin {
         getProxy().getPluginManager().registerCommand(this, new ReloadCommand());
 
         getLogger().info("Loading config.yml...");
-        config = BungeeYamlFactory.loadUnsafe(this, "config.yml");
+
+        try {
+            config.load();
+        } catch (IOException e) {
+            getLogger().log(Level.SEVERE, "Could not load config.yml", e);
+            return;
+        }
 
         String url = config.getString("discord-webhook-url");
 
