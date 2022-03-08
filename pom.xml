@@ -164,6 +164,22 @@
                             <pattern>club.minnced.discord</pattern>
                             <shadedPattern>${project.groupId}.lib.discord</shadedPattern>
                         </relocation>
+                        <relocation>
+                            <pattern>okhttp3</pattern>
+                            <shadedPattern>${project.groupId}.lib.okhttp3</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>okio</pattern>
+                            <shadedPattern>${project.groupId}.lib.okio</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.json</pattern>
+                            <shadedPattern>${project.groupId}.lib.json</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.jetbrains</pattern>
+                            <shadedPattern>${project.groupId}.lib.jetbrains</shadedPattern>
+                        </relocation>
                     </relocations>
                 </configuration>
                 <executions>
