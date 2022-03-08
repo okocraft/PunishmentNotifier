@@ -11,7 +11,7 @@ import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.event.EventHandler;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.stream.Stream;
 
@@ -36,11 +36,14 @@ public class PlayerNotifier implements Listener {
         ProxiedPlayer player = e.getPlayer();
         String strUuid = player.getUniqueId().toString().replace("-", "");
 
-        if (!yaml.getKeyList().contains(strUuid)) {
-            return;
+        int id = yaml.getInteger(strUuid, -1);
+
+        if (id == -1) {
+            // Why does Punishment#getUUID return a name?
+            strUuid = player.getName().toLowerCase(Locale.ENGLISH);
+            id = yaml.getInteger(strUuid, -1);
         }
 
-        int id = yaml.getInteger(strUuid, -1);
         if (id != -1) {
             PunishmentManager pm = PunishmentManager.get();
             Punishment p = pm.getPunishment(id);
