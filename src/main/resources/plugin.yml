@@ -3,4 +3,4 @@ description: ${project.description}
 main: net.okocraft.punishmentnotifier.PunishmentNotifier
 version: ${project.version}
 author: Siroshun09
-depend: [AdvancedBan]
+depend: [ AdvancedBan ]
