@@ -21,7 +21,7 @@ public class PunishmentListener implements Listener {
 
         plugin.getDiscordNotifier().sendNewPunishmentLog(p);
 
-        if (p.getType() == PunishmentType.WARNING) {
+        if (p.getType() == PunishmentType.WARNING || p.getType() == PunishmentType.TEMP_WARNING) {
             plugin.getPlayerNotifier().addNotification(p);
         }
     }
@@ -32,7 +32,7 @@ public class PunishmentListener implements Listener {
 
         plugin.getDiscordNotifier().sendRevocationLog(p);
 
-        if (p.getType() == PunishmentType.WARNING) {
+        if (p.getType() == PunishmentType.WARNING || p.getType() == PunishmentType.TEMP_WARNING) {
             plugin.getPlayerNotifier().removeNotification(p);
         }
     }
