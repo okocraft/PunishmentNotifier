@@ -1,5 +1,6 @@
 package net.okocraft.punishmentnotifier;
 
+import com.github.siroshun09.configapi.api.util.ResourceUtils;
 import com.github.siroshun09.configapi.yaml.YamlConfiguration;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -22,6 +23,7 @@ public class PunishmentNotifier extends Plugin {
         getLogger().info("Loading config.yml...");
 
         try {
+            ResourceUtils.copyFromJarIfNotExists(getFile().toPath(), "config.yml", config.getPath());
             config.load();
         } catch (IOException e) {
             getLogger().log(Level.SEVERE, "Could not load config.yml", e);
