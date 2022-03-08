@@ -13,6 +13,7 @@ import net.md_5.bungee.event.EventHandler;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.stream.Stream;
 
 public class PlayerNotifier implements Listener {
 
@@ -45,12 +46,12 @@ public class PlayerNotifier implements Listener {
             Punishment p = pm.getPunishment(id);
 
             if (p != null) {
-                List.of(
-                        "&8[&c処罰&8]&c あなたは警告されています:",
-                        "&7理由: &r" + p.getReason(),
-                        "&7処罰者: &b" + p.getOperator(),
-                        "&7累積回数: &b" + pm.getCurrentWarns(strUuid) + "回"
-                ).stream()
+                Stream.of(
+                                "&8[&c処罰&8]&c あなたは警告されています:",
+                                "&7理由: &r" + p.getReason(),
+                                "&7処罰者: &b" + p.getOperator(),
+                                "&7累積回数: &b" + pm.getCurrentWarns(strUuid) + "回"
+                        )
                         .map(s -> ChatColor.translateAlternateColorCodes('&', s))
                         .map(TextComponent::fromLegacyText)
                         .forEach(player::sendMessage);
