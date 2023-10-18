@@ -4,25 +4,28 @@
 
 # PunishmentNotifier
 
-AdvancedBan での処罰時に Discord にログを送る BungeeCord プラグイン
+A Velocity plugin that sends notifications to the Discord when the player has been punished by LibertyBans.
+
+## Features
+
+- Send punishment/pardon logs to Discord using a webhook
+- Send notifications when the player who is punished offline is logged in
 
 ## Requirements
 
-- Java 11+
-- BungeeCord
-- AdvancedBan
+- Java 17+
+- Velocity
+- LibertyBans
 
-## Usage
+## How to install this plugin
 
-- サーバーディレクトリの `/plugins/` に配置し、サーバーを再起動する。
-
-- 作成された `config.yml` にて `discord-webhook-url` に Webhook の URL を設定する。
-
-- `/pnreload`
+- Download a plugin jar from [the Release page](https://github.com/okocraft/PunishmentNotifier/releases)
+- Place the downloaded jar in the plugin directory (`plugins`)
+- Set your webhook URL to `discord-webhook-url` in `config.yml`
+    - `config.yml` is in the plugin directory (`./plugins/punishmentnotifier`)
+- Run `/pnreload` to reload the plugin
 
 ## License
-
-このプロジェクトは GPL-3.0 のもとで公開しています。詳しくは [ライセンスファイル](LICENSE) をお読みください。
 
 This project is licensed under the permissive GPL-3.0 license. Please see [LICENSE](LICENSE) for more info.
 
