@@ -11,7 +11,7 @@
 
     <name>PunishmentNotifier</name>
     <url>https://github.com/okocraft/PunishmentNotifier</url>
-    <description>A BungeeCord plugin that sends AdvancedBan punishment information to the Discord.</description>
+    <description>A Velocity plugin that sends notifications to the Discord when the player has been punished by LibertyBans.</description>
 
     <licenses>
         <license>
@@ -38,15 +38,15 @@
     </ciManagement>
 
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <project.charset>UTF-8</project.charset>
         <project.build.sourceEncoding>${project.charset}</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${project.charset}</project.reporting.outputEncoding>
     </properties>
     <repositories>
         <repository>
-            <id>bungeecord-repo</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <id>papermc-repo</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
         <repository>
             <id>jitpack.io</id>
@@ -55,11 +55,11 @@
     </repositories>
 
     <dependencies>
-        <!-- BungeeCord https://github.com/SpigotMC/BungeeCord -->
+        <!-- Velocity https://github.com/PaperMC/Velocity -->
         <dependency>
-            <groupId>net.md-5</groupId>
-            <artifactId>bungeecord-api</artifactId>
-            <version>1.20-R0.1-SNAPSHOT</version>
+            <groupId>com.velocitypowered</groupId>
+            <artifactId>velocity-api</artifactId>
+            <version>3.3.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <!-- AdvancedBan https://github.com/DevLeoko/AdvancedBan -->
