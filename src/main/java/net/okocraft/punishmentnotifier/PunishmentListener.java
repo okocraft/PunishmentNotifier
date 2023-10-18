@@ -1,13 +1,18 @@
 package net.okocraft.punishmentnotifier;
 
-import me.leoko.advancedban.bungee.event.PunishmentEvent;
-import me.leoko.advancedban.bungee.event.RevokePunishmentEvent;
-import me.leoko.advancedban.utils.Punishment;
-import me.leoko.advancedban.utils.PunishmentType;
-import net.md_5.bungee.api.plugin.Listener;
-import net.md_5.bungee.event.EventHandler;
+import org.jetbrains.annotations.NotNull;
+import space.arim.libertybans.api.Operator;
+import space.arim.libertybans.api.PlayerOperator;
+import space.arim.libertybans.api.PlayerVictim;
+import space.arim.libertybans.api.event.PostPardonEvent;
+import space.arim.libertybans.api.event.PostPunishEvent;
+import space.arim.libertybans.api.punish.Punishment;
 
-public class PunishmentListener implements Listener {
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
+public class PunishmentListener {
 
     private final PunishmentNotifier plugin;
 
@@ -15,25 +20,54 @@ public class PunishmentListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler
-    public void onPunishment(PunishmentEvent e) {
-        Punishment p = e.getPunishment();
+    public void onPunish(PostPunishEvent event) {
+        var punishment = event.getPunishment();
 
-        plugin.getDiscordNotifier().sendNewPunishmentLog(p);
-
-        if (p.getType() == PunishmentType.WARNING || p.getType() == PunishmentType.TEMP_WARNING) {
-            plugin.getPlayerNotifier().addNotification(p);
+        if (!(punishment.getVictim() instanceof PlayerVictim player)) {
+            return;
         }
+
+        if (this.plugin.getProxy().getPlayer(player.getUUID()).isEmpty()) {
+            this.plugin.getPlayerNotifier().addNotification(punishment);
+        }
+
+        var playerName = this.plugin.getLibertyBans().getUserResolver().lookupName(player.getUUID()).join().orElse(player.getUUID().toString());
+
+        var operatorName = this.resolveOperatorName(punishment.getOperator());
+
+        var duration = this.formatDuration(punishment);
+
+        this.plugin.getDiscordNotifier().sendPunishLog(punishment, playerName, operatorName, duration);
     }
 
-    @EventHandler
-    public void onRevoke(RevokePunishmentEvent e) {
-        Punishment p = e.getPunishment();
+    public void onPardon(PostPardonEvent event) {
+        var punishment = event.getPunishment();
 
-        plugin.getDiscordNotifier().sendRevocationLog(p);
+        if (!(punishment.getVictim() instanceof PlayerVictim player)) {
+            return;
+        }
 
-        if (p.getType() == PunishmentType.WARNING || p.getType() == PunishmentType.TEMP_WARNING) {
-            plugin.getPlayerNotifier().removeNotification(p);
+        this.plugin.getPlayerNotifier().removeNotification(punishment);
+
+        var playerName = this.plugin.getLibertyBans().getUserResolver().lookupName(player.getUUID()).join().orElse(player.getUUID().toString());
+
+        var operatorName = this.resolveOperatorName(punishment.getOperator());
+
+        this.plugin.getDiscordNotifier().sendPardonLog(punishment, playerName, operatorName);
+    }
+
+    private String formatDuration(@NotNull Punishment punishment) {
+        return this.plugin.getLibertyBans().getFormatter().formatDuration(Duration.between(
+                Instant.now().truncatedTo(ChronoUnit.SECONDS),
+                punishment.getEndDate().truncatedTo(ChronoUnit.SECONDS)
+        ));
+    }
+
+    private String resolveOperatorName(@NotNull Operator operator) {
+        if (operator instanceof PlayerOperator player) {
+            return this.plugin.getLibertyBans().getUserResolver().lookupName(player.getUUID()).join().orElse("Unknown");
+        } else {
+            return "Console";
         }
     }
 }

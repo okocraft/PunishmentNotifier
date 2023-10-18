@@ -2,110 +2,172 @@ package net.okocraft.punishmentnotifier;
 
 import com.github.siroshun09.configapi.api.util.ResourceUtils;
 import com.github.siroshun09.configapi.yaml.YamlConfiguration;
-import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.plugin.Command;
-import net.md_5.bungee.api.plugin.Plugin;
+import com.google.inject.Inject;
+import com.velocitypowered.api.command.SimpleCommand;
+import com.velocitypowered.api.event.PostOrder;
+import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
+import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
+import com.velocitypowered.api.plugin.annotation.DataDirectory;
+import com.velocitypowered.api.proxy.ProxyServer;
+import net.kyori.adventure.text.Component;
+import org.slf4j.Logger;
+import space.arim.libertybans.api.LibertyBans;
+import space.arim.libertybans.api.event.PostPardonEvent;
+import space.arim.libertybans.api.event.PostPunishEvent;
+import space.arim.omnibus.OmnibusProvider;
+import space.arim.omnibus.events.ListenerPriorities;
+import space.arim.omnibus.events.RegisteredListener;
 
 import java.io.IOException;
-import java.util.logging.Level;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
-public class PunishmentNotifier extends Plugin {
+public class PunishmentNotifier {
 
-    private final YamlConfiguration config = YamlConfiguration.create(getDataFolder().toPath().resolve("config.yml"));
-    private DiscordNotifier discordNotifier;
-    private PlayerNotifier playerNotifier;
+    private final DiscordNotifier discordNotifier = new DiscordNotifier();
+    private final PlayerNotifier playerNotifier = new PlayerNotifier(this);
 
-    @Override
-    public void onEnable() {
-        getProxy().getPluginManager().registerCommand(this, new ReloadCommand());
+    private final PunishmentListener punishmentListener = new PunishmentListener(this);
+    private final List<RegisteredListener> registeredListeners = new ArrayList<>();
 
-        getLogger().info("Loading config.yml...");
+    private final ProxyServer proxy;
+    private final Logger logger;
+    private final Path dataDirectory;
 
-        try {
-            ResourceUtils.copyFromJarIfNotExists(getFile().toPath(), "config.yml", config.getPath());
-            config.load();
-        } catch (IOException e) {
-            getLogger().log(Level.SEVERE, "Could not load config.yml", e);
-            return;
-        }
+    private LibertyBans libertyBans;
 
-        String url = config.getString("discord-webhook-url");
-
-        if (url.isEmpty()) {
-            getLogger().warning("No Webhook url has been set.");
-            return;
-        }
-
-        getLogger().info("Creating webhook client...");
-        discordNotifier = new DiscordNotifier(config.getString("discord-webhook-url"));
-
-        getLogger().info("Registering listeners...");
-        registerListeners();
-
-        getLogger().info("Successfully enabled!");
+    @Inject
+    public PunishmentNotifier(ProxyServer proxy, Logger logger, @DataDirectory Path dataDirectory) {
+        this.proxy = proxy;
+        this.logger = logger;
+        this.dataDirectory = dataDirectory;
     }
 
-    @Override
-    public void onDisable() {
-        if (discordNotifier != null) {
-            discordNotifier.shutdown();
+    @Subscribe(order = PostOrder.LAST)
+    public void onEnable(ProxyInitializeEvent ignored) {
+        this.getProxy().getCommandManager().register("pnreload", new ReloadCommand());
+
+        this.getLogger().info("Loading config.yml...");
+
+        String url;
+
+        try {
+            url = this.readWebhookUrl();
+        } catch (IOException e) {
+            this.getLogger().error("Could not load config.yml", e);
+            return;
         }
 
-        unregisterListeners();
-        getProxy().getPluginManager().unregisterCommands(this);
+        this.getLogger().info("Loading LibertyBans API...");
+        this.libertyBans = OmnibusProvider.getOmnibus().getRegistry().getProvider(LibertyBans.class).orElseThrow();
 
-        getLogger().info("Successfully disabled!");
+        this.getLogger().info("Loading notifications...");
+        this.playerNotifier.load();
+
+        if (url.isEmpty()) {
+            this.getLogger().warn("No Webhook url has been set.");
+        } else {
+            this.getLogger().info("Creating the webhook client...");
+            this.discordNotifier.start(url);
+        }
+
+        this.getLogger().info("Registering listeners...");
+        this.registerListeners();
+
+        this.getLogger().info("Successfully enabled!");
+    }
+
+    @Subscribe(order = PostOrder.FIRST)
+    public void onDisable(ProxyShutdownEvent ignored) {
+        this.getProxy().getCommandManager().unregister("pnreload");
+
+        this.getLogger().info("Unregistering listeners...");
+        this.unregisterListeners();
+
+        if (this.discordNotifier.isRunning()) {
+            this.getLogger().info("Shutting down the webhook client...");
+            this.discordNotifier.shutdown();
+        }
+
+        this.getLogger().info("Successfully disabled!");
+    }
+
+    public ProxyServer getProxy() {
+        return this.proxy;
+    }
+
+    public Logger getLogger() {
+        return this.logger;
+    }
+
+    public Path getDataDirectory() {
+        return this.dataDirectory;
+    }
+
+    public LibertyBans getLibertyBans() {
+        return this.libertyBans;
     }
 
     public DiscordNotifier getDiscordNotifier() {
-        return discordNotifier;
+        return this.discordNotifier;
     }
 
     public PlayerNotifier getPlayerNotifier() {
-        return playerNotifier;
+        return this.playerNotifier;
     }
 
     private void registerListeners() {
-        playerNotifier = new PlayerNotifier(this);
+        this.getProxy().getEventManager().register(this, this.playerNotifier);
 
-        getProxy().getPluginManager().registerListener(this, playerNotifier);
-        getProxy().getPluginManager().registerListener(this, new PunishmentListener(this));
+        this.registeredListeners.add(this.getLibertyBans().getOmnibus().getEventBus().registerListener(PostPunishEvent.class, ListenerPriorities.NORMAL, this.punishmentListener::onPunish));
+        this.registeredListeners.add(this.getLibertyBans().getOmnibus().getEventBus().registerListener(PostPardonEvent.class, ListenerPriorities.NORMAL, this.punishmentListener::onPardon));
     }
 
     private void unregisterListeners() {
-        getProxy().getPluginManager().unregisterListeners(this);
+        if (this.libertyBans != null) {
+            this.getProxy().getEventManager().unregisterListeners(this);
+            this.registeredListeners.forEach(this.getLibertyBans().getOmnibus().getEventBus()::unregisterListener);
+        }
     }
 
-    private class ReloadCommand extends Command {
+    private String readWebhookUrl() throws IOException {
+        try (var config = YamlConfiguration.create(this.dataDirectory.resolve("config.yml"))) {
+            ResourceUtils.copyFromClassLoaderIfNotExists(this.getClass().getClassLoader(), "config.yml", config.getPath());
+            config.load();
 
-        public ReloadCommand() {
-            super("pnreload", "punishmentnotifier.reload");
+            return config.getString("discord-webhook-url");
         }
+    }
 
+    private class ReloadCommand implements SimpleCommand {
         @Override
-        public void execute(CommandSender sender, String[] args) {
-            sender.sendMessage(TextComponent.fromLegacyText("Reloading PunishmentNotifier..."));
+        public void execute(Invocation invocation) {
+            var sender = invocation.source();
 
-            unregisterListeners();
+            PunishmentNotifier.this.unregisterListeners();
+
+            String url;
 
             try {
-                config.reload();
+                url = PunishmentNotifier.this.readWebhookUrl();
             } catch (IOException e) {
-                getLogger().log(Level.SEVERE, "Could not reload config.yml", e);
-                sender.sendMessage(TextComponent.fromLegacyText("Could not reload config.yml. Please check the console."));
+                PunishmentNotifier.this.getLogger().error("Could not load config.yml", e);
+                sender.sendMessage(Component.text("Could not reload config.yml. Please check the console."));
                 return;
             }
-
-            String url = config.getString("discord-webhook-url");
 
             if (url.isEmpty()) {
-                getLogger().warning("No Webhook url has been set.");
-                return;
+                PunishmentNotifier.this.getLogger().warn("No Webhook url has been set.");
+                sender.sendMessage(Component.text("PunishmentNotifier has been reloaded: No Webhook url has been set."));
+            } else {
+                PunishmentNotifier.this.discordNotifier.start(url);
             }
 
-            discordNotifier.restart(url);
             registerListeners();
+
+            sender.sendMessage(Component.text("PunishmentNotifier has been reloaded!"));
         }
     }
 }

@@ -1,0 +1,16 @@
+{
+  "id": "punishmentnotifier",
+  "name": "PunishmentNotifier",
+  "version": "${project.version}",
+  "description": "${project.description}",
+  "authors": [
+    "Siroshun09"
+  ],
+  "dependencies": [
+    {
+      "id": "libertybans",
+      "optional": false
+    }
+  ],
+  "main": "net.okocraft.punishmentnotifier.PunishmentNotifier"
+}
