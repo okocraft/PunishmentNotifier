@@ -144,7 +144,7 @@ public class PunishmentNotifier {
         }
 
         var config = YAMLConfigurationLoader.builder().setPath(path).build().load();
-        return config.getString("discord-webhook-url");
+        return config.getNode("discord-webhook-url").getString();
     }
 
     private class ReloadCommand implements SimpleCommand {
