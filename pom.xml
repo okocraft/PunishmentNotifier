@@ -140,8 +140,8 @@
                     <minimizeJar>true</minimizeJar>
                     <relocations>
                         <relocation>
-                            <pattern>com.github.siroshun09.configapi</pattern>
-                            <shadedPattern>${project.groupId}.lib.configapi</shadedPattern>
+                            <pattern>kotlin</pattern>
+                            <shadedPattern>${project.groupId}.lib.kotlin</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>club.minnced.discord</pattern>
