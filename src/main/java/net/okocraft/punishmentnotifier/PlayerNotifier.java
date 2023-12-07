@@ -231,7 +231,7 @@ public class PlayerNotifier {
         this.plugin.getProxy().getScheduler().buildTask(this.plugin, () -> save(snapshot)).schedule();
     }
 
-    private void save(Map<UUID, long[]> snapshot) {
+    private synchronized void save(Map<UUID, long[]> snapshot) {
         try (var writer = Files.newBufferedWriter(
                 this.plugin.getDataDirectory().resolve("data.dat"),
                 StandardCharsets.UTF_8,
@@ -244,20 +244,27 @@ public class PlayerNotifier {
 
     private static void writeWarnMap(Map<UUID, long[]> snapshot, BufferedWriter writer) throws IOException {
         for (var entry : snapshot.entrySet()) {
-            writer.write(entry.getKey().toString());
-            writer.write('=');
-
             long[] value = entry.getValue();
-            for (int i = 0; ; ) {
-                long id = value[i];
-                writer.write(Long.toString(id));
 
-                if (++i == value.length) {
-                    break;
-                } else {
-                    writer.write(',');
+            if (value.length == 0) {
+                continue;
+            }
+
+            int idCount = 0;
+
+            for (long id : value) {
+                if (id != INVALID_ID) {
+                    if (idCount++ == 0) {
+                        writer.write(entry.getKey().toString());
+                        writer.write('=');
+                    } else {
+                        writer.write(',');
+                    }
+                    writer.write(Long.toString(id));
                 }
             }
+
+            writer.newLine();
         }
     }
 }
