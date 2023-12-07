@@ -1,7 +1,5 @@
 package net.okocraft.punishmentnotifier;
 
-import com.github.siroshun09.configapi.api.util.ResourceUtils;
-import com.github.siroshun09.configapi.yaml.YamlConfiguration;
 import com.google.inject.Inject;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.event.PostOrder;
@@ -11,6 +9,7 @@ import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.kyori.adventure.text.Component;
+import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
 import org.slf4j.Logger;
 import space.arim.libertybans.api.LibertyBans;
 import space.arim.libertybans.api.event.PostPardonEvent;
@@ -20,9 +19,11 @@ import space.arim.omnibus.events.ListenerPriorities;
 import space.arim.omnibus.events.RegisteredListener;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class PunishmentNotifier {
 
@@ -133,12 +134,17 @@ public class PunishmentNotifier {
     }
 
     private String readWebhookUrl() throws IOException {
-        try (var config = YamlConfiguration.create(this.dataDirectory.resolve("config.yml"))) {
-            ResourceUtils.copyFromClassLoaderIfNotExists(this.getClass().getClassLoader(), "config.yml", config.getPath());
-            config.load();
+        var path = this.dataDirectory.resolve("config.yml");
 
-            return config.getString("discord-webhook-url");
+        if (!Files.isRegularFile(path)) {
+            Files.createDirectories(this.dataDirectory);
+            try (var input = this.getClass().getResourceAsStream("config.yml")) {
+                Files.copy(Objects.requireNonNull(input, "Could not find config.yml in the jar."), path);
+            }
         }
+
+        var config = YAMLConfigurationLoader.builder().setPath(path).build().load();
+        return config.getString("discord-webhook-url");
     }
 
     private class ReloadCommand implements SimpleCommand {
