@@ -37,7 +37,7 @@ public class PlayerNotifier {
     public PlayerNotifier(LibertyBans libertyBans, Path dataDirectory, BiConsumer<Runnable, Duration> asyncExecutor) {
         this.libertyBans = libertyBans;
         this.dataFile = new MapDataFile<>(
-                dataDirectory.resolve("data.dat"),
+                dataDirectory.resolve("player-notifications.dat"),
                 UUID::toString, PlayerNotifier::idsToString,
                 UUIDParser::parse, PlayerNotifier::stringToIds
         );
@@ -224,7 +224,7 @@ public class PlayerNotifier {
         try {
             this.dataFile.load(this.notifications);
         } catch (IOException e) {
-            PunishmentNotifier.LOGGER.error("Could not load data.dat", e);
+            PunishmentNotifier.LOGGER.error("Could not load player-notifications.dat", e);
         }
     }
 
@@ -236,7 +236,7 @@ public class PlayerNotifier {
         try {
             this.dataFile.save(snapshot);
         } catch (IOException e) {
-            PunishmentNotifier.LOGGER.error("Could not save data.dat", e);
+            PunishmentNotifier.LOGGER.error("Could not save player-notifications.dat", e);
         }
     }
 }
