@@ -25,10 +25,16 @@ public record Config(Notifications notifications) {
         }
     }
 
-    public record Notifications(PunishmentNotification punishment) {
+    public record Notifications(PunishmentNotification punishment, AltNotification alt) {
     }
 
     public record PunishmentNotification(
+            @Comment("The url of Discord Webhook. Set this value to empty to disable notifications.")
+            String webhookUrl
+    ) {
+    }
+
+    public record AltNotification(
             @Comment("The url of Discord Webhook. Set this value to empty to disable notifications.")
             String webhookUrl
     ) {

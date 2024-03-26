@@ -1,5 +1,6 @@
 package net.okocraft.punishmentnotifier;
 
+import club.minnced.discord.webhook.WebhookClientBuilder;
 import com.google.inject.Inject;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.event.PostOrder;
@@ -74,6 +75,7 @@ public class PunishmentNotifier {
         LOGGER.info("Registering listeners...");
         var playerNotifier = this.createAndRegisterPlayerNotifier();
         this.registerPunishmentListener(playerNotifier);
+        this.enableAltNotifier();
 
         LOGGER.info("Successfully enabled!");
     }
@@ -113,6 +115,18 @@ public class PunishmentNotifier {
         this.onShutdown.add(() -> this.libertyBans.getOmnibus().getEventBus().unregisterListener(registered));
     }
 
+    private void enableAltNotifier() {
+        var url = this.config.notifications().alt().webhookUrl();
+
+        if (url != null && !url.isEmpty()) {
+            var webhook = new WebhookClientBuilder(url).build();
+            var notifier = new AltNotifier(webhook, this.libertyBans.getAccountSupervisor(), this.dataDirectory, this.asyncExecutor);
+            notifier.load();
+            this.proxy.getEventManager().register(this, notifier);
+            this.onShutdown.add(webhook::close);
+        }
+    }
+
     private class ReloadCommand implements SimpleCommand {
         @Override
         public void execute(Invocation invocation) {
@@ -132,6 +146,7 @@ public class PunishmentNotifier {
 
             var playerNotifier = plugin.createAndRegisterPlayerNotifier();
             plugin.registerPunishmentListener(playerNotifier);
+            plugin.enableAltNotifier();
 
             sender.sendMessage(Component.text("PunishmentNotifier has been reloaded!"));
         }
