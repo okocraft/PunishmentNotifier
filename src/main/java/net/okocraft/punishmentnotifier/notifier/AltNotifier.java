@@ -1,11 +1,13 @@
-package net.okocraft.punishmentnotifier;
+package net.okocraft.punishmentnotifier.notifier;
 
 import club.minnced.discord.webhook.WebhookClient;
 import club.minnced.discord.webhook.send.WebhookEmbed;
 import club.minnced.discord.webhook.send.WebhookEmbedBuilder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
+import net.okocraft.punishmentnotifier.PunishmentNotifier;
 import net.okocraft.punishmentnotifier.data.MapDataFile;
+import net.okocraft.punishmentnotifier.util.Reflections;
 import net.okocraft.punishmentnotifier.util.UUIDParser;
 import space.arim.libertybans.api.NetworkAddress;
 import space.arim.libertybans.api.PunishmentType;

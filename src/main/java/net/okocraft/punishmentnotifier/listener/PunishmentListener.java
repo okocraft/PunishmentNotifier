@@ -1,9 +1,10 @@
-package net.okocraft.punishmentnotifier;
+package net.okocraft.punishmentnotifier.listener;
 
 import club.minnced.discord.webhook.WebhookClient;
 import club.minnced.discord.webhook.WebhookClientBuilder;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.okocraft.punishmentnotifier.config.Config;
+import net.okocraft.punishmentnotifier.notifier.PlayerNotifier;
 import org.jetbrains.annotations.NotNull;
 import space.arim.libertybans.api.LibertyBans;
 import space.arim.libertybans.api.Operator;

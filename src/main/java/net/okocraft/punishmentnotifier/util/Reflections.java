@@ -1,4 +1,4 @@
-package net.okocraft.punishmentnotifier;
+package net.okocraft.punishmentnotifier.util;
 
 import net.kyori.adventure.text.Component;
 import space.arim.libertybans.api.LibertyBans;
@@ -14,7 +14,7 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.RecordComponent;
 import java.util.Arrays;
 
-final class Reflections {
+public final class Reflections {
 
     private static final MethodHandle GET_PUNISHMENT_MESSAGE_METHOD;
 
@@ -33,17 +33,17 @@ final class Reflections {
     }
 
     @SuppressWarnings("unchecked")
-    static CentralisedFuture<Component> getPunishmentMessage(PunishmentFormatter formatter, Punishment punishment) throws Throwable {
+    public static CentralisedFuture<Component> getPunishmentMessage(PunishmentFormatter formatter, Punishment punishment) throws Throwable {
         return (CentralisedFuture<Component>) GET_PUNISHMENT_MESSAGE_METHOD.invoke(formatter, punishment);
     }
 
     private static RecordComponent DETECTION_KIND_FIELD;
 
-    static RecordComponent getDetectionKindComponent(Class<?> clazz) {
+    private static RecordComponent getDetectionKindComponent(Class<?> clazz) {
         return Arrays.stream(clazz.getRecordComponents()).filter(component -> component.getName().equals("detectionKind")).findFirst().orElseThrow();
     }
 
-    static boolean isNormalDetection(AltAccount account) {
+    public static boolean isNormalDetection(AltAccount account) {
         if (DETECTION_KIND_FIELD == null) {
             DETECTION_KIND_FIELD = getDetectionKindComponent(account.getClass());
         }
