@@ -5,6 +5,8 @@ import club.minnced.discord.webhook.send.WebhookEmbed;
 import club.minnced.discord.webhook.send.WebhookEmbedBuilder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
+import net.okocraft.punishmentnotifier.data.MapDataFile;
+import net.okocraft.punishmentnotifier.util.UUIDParser;
 import space.arim.libertybans.api.NetworkAddress;
 import space.arim.libertybans.api.PunishmentType;
 import space.arim.libertybans.api.user.AccountSupervisor;
@@ -12,23 +14,21 @@ import space.arim.libertybans.api.user.AccountSupervisor;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 public class AltNotifier {
 
     private final AccountSupervisor supervisor;
-    private final Path dataDirectory;
+    private final MapDataFile<UUID, String> dataFile;
     private final BiConsumer<Runnable, Duration> asyncExecutor;
     private final WebhookClient webhook;
     private final Map<UUID, String> notifiedUuids = new ConcurrentHashMap<>();
@@ -36,7 +36,11 @@ public class AltNotifier {
     public AltNotifier(WebhookClient webhook, AccountSupervisor supervisor, Path dataDirectory, BiConsumer<Runnable, Duration> asyncExecutor) {
         this.webhook = webhook;
         this.supervisor = supervisor;
-        this.dataDirectory = dataDirectory;
+        this.dataFile = new MapDataFile<>(
+                dataDirectory.resolve("notified-alts.dat"),
+                UUID::toString, Function.identity(),
+                UUIDParser::parse, Function.identity()
+        );
         this.asyncExecutor = asyncExecutor;
     }
 
@@ -92,52 +96,18 @@ public class AltNotifier {
     }
 
     public void load() {
-        var path = this.dataDirectory.resolve("notified-alts.dat");
-
-        if (Files.isRegularFile(path)) {
-            try (var reader = Files.newBufferedReader(path)) {
-                reader.lines().forEach(this::processLine);
-            } catch (IOException e) {
-                PunishmentNotifier.LOGGER.error("Could not load notified-alts.dat", e);
-            }
-        }
-    }
-
-    private void processLine(String line) {
-        var elements = line.split(":", 2);
-
-        if (elements.length != 2) {
-            PunishmentNotifier.LOGGER.error("Invalid line: " + line);
-            return;
-        }
-
-        UUID uuid;
-
         try {
-            uuid = UUID.fromString(elements[0]);
-        } catch (IllegalArgumentException e) {
-            PunishmentNotifier.LOGGER.error("Invalid line: " + line);
-            return;
+            this.dataFile.load(this.notifiedUuids);
+        } catch (IOException e) {
+            PunishmentNotifier.LOGGER.error("Could not load notified-alts.dat", e);
         }
-
-        this.notifiedUuids.put(uuid, elements[1]);
     }
 
-    private void save() {
-        try (var writer = Files.newBufferedWriter(
-                this.dataDirectory.resolve("notified-alts.dat"),
-                StandardCharsets.UTF_8,
-                StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
-            for (var entry : Set.copyOf(this.notifiedUuids.entrySet())) {
-                writer.write(entry.getKey().toString());
-                writer.write(':');
-                writer.write(entry.getValue());
-                writer.newLine();
-            }
+    private synchronized void save() {
+        try {
+            this.dataFile.save(Map.copyOf(this.notifiedUuids));
         } catch (IOException e) {
             PunishmentNotifier.LOGGER.error("Could not save notified-alts.dat", e);
         }
     }
-
-
 }
