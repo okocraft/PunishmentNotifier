@@ -3,6 +3,7 @@ package net.okocraft.punishmentnotifier;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
 import com.velocitypowered.api.proxy.Player;
+import space.arim.libertybans.api.LibertyBans;
 import space.arim.libertybans.api.PlayerVictim;
 import space.arim.libertybans.api.punish.Punishment;
 
@@ -10,6 +11,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.Arrays;
@@ -18,18 +20,23 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.locks.StampedLock;
+import java.util.function.BiConsumer;
 
 public class PlayerNotifier {
 
     private static final long[] EMPTY_IDS = new long[0];
     private static final long INVALID_ID = Long.MIN_VALUE;
 
-    private final PunishmentNotifier plugin;
     private final Map<UUID, long[]> warnMap = new HashMap<>();
     private final StampedLock lock = new StampedLock();
+    private final LibertyBans libertyBans;
+    private final Path dataDirectory;
+    private final BiConsumer<Runnable, Duration> asyncExecutor;
 
-    public PlayerNotifier(PunishmentNotifier plugin) {
-        this.plugin = plugin;
+    public PlayerNotifier(LibertyBans libertyBans, Path dataDirectory, BiConsumer<Runnable, Duration> asyncExecutor) {
+        this.libertyBans = libertyBans;
+        this.dataDirectory = dataDirectory;
+        this.asyncExecutor = asyncExecutor;
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -42,10 +49,7 @@ public class PlayerNotifier {
         long[] ids = this.pickPunishmentIds(e.getPlayer().getUniqueId());
 
         if (ids.length != 0) {
-            this.plugin.getProxy().getScheduler()
-                    .buildTask(this.plugin, () -> notifyPunishments(e.getPlayer(), ids))
-                    .delay(Duration.ofSeconds(3))
-                    .schedule();
+            this.asyncExecutor.accept(() -> this.notifyPunishments(e.getPlayer(), ids), Duration.ofSeconds(3));
         }
     }
 
@@ -55,7 +59,7 @@ public class PlayerNotifier {
                 continue;
             }
 
-            this.plugin.getLibertyBans().getSelector()
+            this.libertyBans.getSelector()
                     .getActivePunishmentById(id)
                     .thenApply(punishment -> {
                         if (punishment.isEmpty()) {
@@ -63,9 +67,9 @@ public class PlayerNotifier {
                         }
 
                         try {
-                            return Reflections.getPunishmentMessage(this.plugin.getLibertyBans().getFormatter(), punishment.get());
+                            return Reflections.getPunishmentMessage(this.libertyBans.getFormatter(), punishment.get());
                         } catch (Throwable ex) {
-                            this.plugin.getLogger().error("An exception occurred while getting a punishment message.", ex);
+                            PunishmentNotifier.LOGGER.error("An exception occurred while getting a punishment message.", ex);
                             return null;
                         }
                     })
@@ -185,13 +189,13 @@ public class PlayerNotifier {
     }
 
     public void load() {
-        var path = this.plugin.getDataDirectory().resolve("data.dat");
+        var path = this.dataDirectory.resolve("data.dat");
 
         if (Files.isRegularFile(path)) {
             try (var reader = Files.newBufferedReader(path)) {
                 reader.lines().forEach(this::processLine);
             } catch (IOException e) {
-                this.plugin.getLogger().error("Could not load data.dat", e);
+                PunishmentNotifier.LOGGER.error("Could not load data.dat", e);
             }
         }
     }
@@ -200,7 +204,7 @@ public class PlayerNotifier {
         var elements = line.split("=", 2);
 
         if (elements.length != 2) {
-            this.plugin.getLogger().error("Invalid line: " + line);
+            PunishmentNotifier.LOGGER.error("Invalid line: " + line);
             return;
         }
 
@@ -209,7 +213,7 @@ public class PlayerNotifier {
         try {
             uuid = UUID.fromString(elements[0]);
         } catch (IllegalArgumentException e) {
-            this.plugin.getLogger().error("Invalid line: " + line);
+            PunishmentNotifier.LOGGER.error("Invalid line: " + line);
             return;
         }
 
@@ -228,17 +232,17 @@ public class PlayerNotifier {
     }
 
     private void saveAsync(Map<UUID, long[]> snapshot) {
-        this.plugin.getProxy().getScheduler().buildTask(this.plugin, () -> save(snapshot)).schedule();
+        this.asyncExecutor.accept(() -> this.save(snapshot), null);
     }
 
     private synchronized void save(Map<UUID, long[]> snapshot) {
         try (var writer = Files.newBufferedWriter(
-                this.plugin.getDataDirectory().resolve("data.dat"),
+                this.dataDirectory.resolve("data.dat"),
                 StandardCharsets.UTF_8,
                 StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
             writeWarnMap(snapshot, writer);
         } catch (IOException e) {
-            this.plugin.getLogger().error("Could not save data.dat", e);
+            PunishmentNotifier.LOGGER.error("Could not save data.dat", e);
         }
     }
 
