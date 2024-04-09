@@ -119,11 +119,12 @@ public class PunishmentNotifier {
     }
 
     private void enableAltNotifier() {
-        var url = this.config.notifications().alt().webhookUrl();
+        var config = this.config.notifications().alt();
+        var url = config.webhookUrl();
 
         if (url != null && !url.isEmpty()) {
             var webhook = new WebhookClientBuilder(url).build();
-            var notifier = new AltNotifier(webhook, this.libertyBans.getAccountSupervisor(), this.dataDirectory, this.asyncExecutor);
+            var notifier = new AltNotifier(config, webhook, this.libertyBans, this.dataDirectory, this.asyncExecutor);
             notifier.load();
             this.proxy.getEventManager().register(this, notifier);
             this.onShutdown.add(webhook::close);

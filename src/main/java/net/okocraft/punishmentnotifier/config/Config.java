@@ -2,6 +2,7 @@ package net.okocraft.punishmentnotifier.config;
 
 import com.github.siroshun09.configapi.core.node.MapNode;
 import com.github.siroshun09.configapi.core.serialization.annotation.Comment;
+import com.github.siroshun09.configapi.core.serialization.annotation.DefaultBoolean;
 import com.github.siroshun09.configapi.core.serialization.key.KeyGenerator;
 import com.github.siroshun09.configapi.core.serialization.record.RecordSerialization;
 import com.github.siroshun09.configapi.format.yaml.YamlFormat;
@@ -36,7 +37,11 @@ public record Config(Notifications notifications) {
 
     public record AltNotification(
             @Comment("The url of Discord Webhook. Set this value to empty to disable notifications.")
-            String webhookUrl
+            String webhookUrl,
+            @Comment("If set to true, only banned alts will be notified.")
+            @DefaultBoolean(false) boolean onlyBannedAlt,
+            @Comment("If set to true, only same IP alts will be notified.")
+            @DefaultBoolean(true) boolean onlyStrongPossibility
     ) {
     }
 }
