@@ -10,18 +10,19 @@ A Velocity plugin that sends notifications to the Discord when the player has be
 
 - Send punishment/pardon logs to Discord using a webhook
 - Send notifications when the player who is punished offline is logged in
+- Send alt information to Discord when the player is logged in
 
 ## Requirements
 
 - Java 17+
-- Velocity
+- Velocity 3.3.0+
 - LibertyBans
 
 ## How to install this plugin
 
 - Download a plugin jar from [the Release page](https://github.com/okocraft/PunishmentNotifier/releases)
 - Place the downloaded jar in the plugin directory (`plugins`)
-- Set your webhook URL to `discord-webhook-url` in `config.yml`
+- Set your webhook URL to `webhook-url` in `config.yml`
     - `config.yml` is in the plugin directory (`./plugins/punishmentnotifier`)
 - Run `/pnreload` to reload the plugin
 
@@ -29,4 +30,4 @@ A Velocity plugin that sends notifications to the Discord when the player has be
 
 This project is licensed under the permissive GPL-3.0 license. Please see [LICENSE](LICENSE) for more info.
 
-Copyright © 2020-2023, Siroshun09
+Copyright © 2020-2024, Siroshun09
