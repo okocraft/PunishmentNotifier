@@ -3,7 +3,6 @@ package net.okocraft.punishmentnotifier;
 import club.minnced.discord.webhook.WebhookClientBuilder;
 import com.google.inject.Inject;
 import com.velocitypowered.api.command.SimpleCommand;
-import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
@@ -59,9 +58,12 @@ public class PunishmentNotifier {
         };
     }
 
-    @Subscribe(order = PostOrder.LAST)
+    @Subscribe
     public void onEnable(ProxyInitializeEvent ignored) {
-        this.proxy.getCommandManager().register("pnreload", new ReloadCommand());
+        this.proxy.getCommandManager().register(
+                this.proxy.getCommandManager().metaBuilder("pnreload").plugin(this).build(),
+                new ReloadCommand()
+        );
 
         LOGGER.info("Loading config.yml...");
 
@@ -83,7 +85,7 @@ public class PunishmentNotifier {
         LOGGER.info("Successfully enabled!");
     }
 
-    @Subscribe(order = PostOrder.FIRST)
+    @Subscribe
     public void onDisable(ProxyShutdownEvent ignored) {
         this.proxy.getCommandManager().unregister("pnreload");
 
