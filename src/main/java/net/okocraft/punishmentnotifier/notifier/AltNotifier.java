@@ -70,16 +70,15 @@ public class AltNotifier {
     }
 
     private void findAlts(UUID uuid, String name, InetAddress address) {
-        var builder = new WebhookEmbedBuilder().setColor(0x000000).setTimestamp(Instant.now());
-        var description = new StringBuilder();
-        var processedUuids = new HashSet<UUID>();
-        boolean bannedAltDetected = false;
-
         List<? extends AltAccount> alts = this.detectAlts(uuid, address);
 
         if (alts.isEmpty()) {
             return;
         }
+
+        var description = new StringBuilder();
+        var processedUuids = new HashSet<UUID>();
+        boolean bannedAltDetected = false;
 
         for (int i = 0, size = alts.size(); i < size; i++) {
             var alt = alts.get(i);
@@ -118,9 +117,11 @@ public class AltNotifier {
             }
         }
 
-        builder.setTitle(new WebhookEmbed.EmbedTitle(alts.size() + " Alt Account(s) Detected: " + name, null)).setDescription(description.toString());
-
-        this.webhook.send(builder.build());
+        this.webhook.send(new WebhookEmbedBuilder()
+                .setColor(0x000000)
+                .setTimestamp(Instant.now())
+                .setTitle(new WebhookEmbed.EmbedTitle(alts.size() + " Alt Account(s) Detected: " + name, null)).setDescription(description.toString())
+                .build());
     }
 
     public void load() {
