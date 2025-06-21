@@ -3,6 +3,7 @@ package net.okocraft.punishmentnotifier.notifier;
 import club.minnced.discord.webhook.WebhookClient;
 import club.minnced.discord.webhook.send.WebhookEmbed;
 import club.minnced.discord.webhook.send.WebhookEmbedBuilder;
+import club.minnced.discord.webhook.send.WebhookMessageBuilder;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
 import net.okocraft.punishmentnotifier.PunishmentNotifier;
@@ -79,6 +80,7 @@ public class AltNotifier {
         var description = new StringBuilder();
         var processedUuids = new HashSet<UUID>();
         boolean bannedAltDetected = false;
+        boolean alert = false;
 
         for (int i = 0, size = alts.size(); i < size; i++) {
             var alt = alts.get(i);
@@ -102,6 +104,7 @@ public class AltNotifier {
             if (info.banned()) {
                 description.append(" [**BANNED**]");
                 bannedAltDetected = true;
+                alert = !info.merePossibility();
             }
 
             if (info.merePossibility()) {
@@ -117,11 +120,16 @@ public class AltNotifier {
             }
         }
 
-        this.webhook.send(new WebhookEmbedBuilder()
-                .setColor(0x000000)
-                .setTimestamp(Instant.now())
-                .setTitle(new WebhookEmbed.EmbedTitle(alts.size() + " Alt Account(s) Detected: " + name, null)).setDescription(description.toString())
-                .build());
+        this.webhook.send(new WebhookMessageBuilder()
+                .setContent(alert ? "@here" : null)
+                .addEmbeds(new WebhookEmbedBuilder()
+                        .setColor(alert ? 0xFF0000 : 0x000000)
+                        .setTimestamp(Instant.now())
+                        .setTitle(new WebhookEmbed.EmbedTitle(alts.size() + " Alt Account(s) Detected: " + name, null)).setDescription(description.toString())
+                        .build()
+                )
+                .build()
+        );
     }
 
     public void load() {
