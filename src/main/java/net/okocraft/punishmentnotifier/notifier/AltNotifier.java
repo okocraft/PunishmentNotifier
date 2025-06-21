@@ -54,7 +54,6 @@ public class AltNotifier {
         this.asyncExecutor = asyncExecutor;
     }
 
-    @SuppressWarnings("UnstableApiUsage")
     @Subscribe
     public void onConnect(ServerPostConnectEvent e) {
         if (e.getPreviousServer() != null) {
