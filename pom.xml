@@ -155,7 +155,6 @@
                             </excludes>
                         </filter>
                     </filters>
-                    <shadedArtifactAttached>true</shadedArtifactAttached>
                     <createDependencyReducedPom>false</createDependencyReducedPom>
                     <minimizeJar>true</minimizeJar>
                     <relocations>
