@@ -1,11 +1,11 @@
 package net.okocraft.punishmentnotifier.config;
 
-import com.github.siroshun09.configapi.core.node.MapNode;
-import com.github.siroshun09.configapi.core.serialization.annotation.Comment;
-import com.github.siroshun09.configapi.core.serialization.annotation.DefaultBoolean;
-import com.github.siroshun09.configapi.core.serialization.key.KeyGenerator;
-import com.github.siroshun09.configapi.core.serialization.record.RecordSerialization;
-import com.github.siroshun09.configapi.format.yaml.YamlFormat;
+import dev.siroshun.configapi.core.node.MapNode;
+import dev.siroshun.configapi.format.yaml.YamlFormat;
+import dev.siroshun.configapi.serialization.record.RecordSerialization;
+import dev.siroshun.serialization.annotation.Comment;
+import dev.siroshun.serialization.annotation.DefaultBoolean;
+import dev.siroshun.serialization.core.key.KeyGenerator;
 
 import java.io.IOException;
 import java.nio.file.Files;
