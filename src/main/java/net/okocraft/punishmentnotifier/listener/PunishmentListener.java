@@ -128,6 +128,7 @@ public class PunishmentListener {
 
         if (!url.isEmpty()) {
             this.webhook = new WebhookClientBuilder(url)
+                    .setThreadId(this.config.threadId())
                     .setThreadFactory(r -> new Thread(r, "Punishment-Notification-Thread"))
                     .setWait(true).build();
         }

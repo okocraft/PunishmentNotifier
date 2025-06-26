@@ -125,7 +125,7 @@ public class PunishmentNotifier {
         var url = config.webhookUrl();
 
         if (url != null && !url.isEmpty()) {
-            var webhook = new WebhookClientBuilder(url).build();
+            var webhook = new WebhookClientBuilder(url).setThreadId(config.threadId()).build();
             var notifier = new AltNotifier(config, webhook, this.libertyBans, this.dataDirectory, this.asyncExecutor);
             notifier.load();
             this.proxy.getEventManager().register(this, notifier);

@@ -31,13 +31,17 @@ public record Config(Notifications notifications) {
 
     public record PunishmentNotification(
             @Comment("The url of Discord Webhook. Set this value to empty to disable notifications.")
-            String webhookUrl
+            String webhookUrl,
+            @Comment("The id of the thread. If you are using forum channel, you need to set this id.")
+            long threadId
     ) {
     }
 
     public record AltNotification(
             @Comment("The url of Discord Webhook. Set this value to empty to disable notifications.")
             String webhookUrl,
+            @Comment("The id of the thread. If you are using forum channel, you need to set this id.")
+            long threadId,
             @Comment("If set to true, only banned alts will be notified.")
             @DefaultBoolean(false) boolean onlyBannedAlt,
             @Comment("If set to true, only same IP alts will be notified.")

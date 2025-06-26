@@ -79,6 +79,7 @@ public class AltNotifier {
 
         var description = new StringBuilder();
         var processedUuids = new HashSet<UUID>();
+        int count = 0;
         boolean bannedAltDetected = false;
         boolean alert = false;
 
@@ -99,6 +100,7 @@ public class AltNotifier {
                 description.append(System.lineSeparator());
             }
 
+            count++;
             description.append("- `").append(info.name()).append('`');
 
             if (info.banned()) {
@@ -118,6 +120,10 @@ public class AltNotifier {
             } else {
                 this.asyncExecutor.accept(this::save, null);
             }
+        }
+
+        if (count == 0) {
+            return;
         }
 
         this.webhook.send(new WebhookMessageBuilder()
