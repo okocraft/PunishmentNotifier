@@ -85,7 +85,7 @@
         <dependency>
             <groupId>dev.siroshun.configapi</groupId>
             <artifactId>configapi-serialization-record</artifactId>
-            <version>5.0.0-rc.1</version>
+            <version>5.0.0-rc.2</version>
             <scope>compile</scope>
         </dependency>
         <!-- Discord-Webhooks https://github.com/MinnDevelopment/discord-webhooks -->
