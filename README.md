@@ -15,7 +15,7 @@ A Velocity plugin that sends notifications to the Discord when the player has be
 ## Requirements
 
 - Java 21+
-- Velocity 3.4.0+
+- Velocity 3.5.0+
 - LibertyBans
 
 ## How to install this plugin
@@ -30,4 +30,4 @@ A Velocity plugin that sends notifications to the Discord when the player has be
 
 This project is licensed under the permissive GPL-3.0 license. Please see [LICENSE](LICENSE) for more info.
 
-Copyright © 2020-2025, Siroshun09
+Copyright © 2020-2026, Siroshun09
