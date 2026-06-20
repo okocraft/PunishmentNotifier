@@ -24,6 +24,8 @@ import space.arim.omnibus.events.EventConsumer;
 import space.arim.omnibus.events.ListenerPriorities;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -68,7 +70,7 @@ public class PunishmentNotifier {
         LOGGER.info("Loading config.yml...");
 
         try {
-            this.config = Config.loadFromYamlFile(this.dataDirectory.resolve("config.yml"));
+            this.config = Config.loadFrom(this.saveResource("config.yml"));
         } catch (IOException e) {
             LOGGER.error("Could not load config.yml", e);
             return;
@@ -95,6 +97,20 @@ public class PunishmentNotifier {
         LOGGER.info("Successfully disabled!");
     }
 
+    public Path saveResource(String filename) throws IOException {
+        Path filepath = this.dataDirectory.resolve(filename);
+        if (!Files.isRegularFile(filepath)) {
+            Files.createDirectories(this.dataDirectory);
+            try (InputStream input = this.getClass().getClassLoader().getResourceAsStream(filename)) {
+                if (input == null) {
+                    throw new IllegalStateException(filename + " was not found in the jar.");
+                }
+                Files.copy(input, filepath);
+            }
+        }
+        return filepath;
+    }
+
     private PlayerNotifier createAndRegisterPlayerNotifier() {
         var notifier = new PlayerNotifier(this.libertyBans, this.dataDirectory, this.asyncExecutor);
 
@@ -107,7 +123,7 @@ public class PunishmentNotifier {
     }
 
     private void registerPunishmentListener(PlayerNotifier playerNotifier) {
-        var listener = new PunishmentListener(this.proxy, this.libertyBans, playerNotifier, this.config.notifications().punishment());
+        var listener = new PunishmentListener(this.proxy, this.libertyBans, playerNotifier, this.config.notifications.punishment);
 
         listener.startWebhookIfEnabled();
 
@@ -121,11 +137,11 @@ public class PunishmentNotifier {
     }
 
     private void enableAltNotifier() {
-        var config = this.config.notifications().alt();
-        var url = config.webhookUrl();
+        var config = this.config.notifications.alt;
+        var url = config.webhookUrl;
 
         if (url != null && !url.isEmpty()) {
-            var webhook = new WebhookClientBuilder(url).setThreadId(config.threadId()).build();
+            var webhook = new WebhookClientBuilder(url).setThreadId(config.threadId).build();
             var notifier = new AltNotifier(config, webhook, this.libertyBans, this.dataDirectory, this.asyncExecutor);
             notifier.load();
             this.proxy.getEventManager().register(this, notifier);
@@ -143,7 +159,7 @@ public class PunishmentNotifier {
             plugin.onShutdown.clear();
 
             try {
-                plugin.config = Config.loadFromYamlFile(plugin.dataDirectory.resolve("config.yml"));
+                plugin.config = Config.loadFrom(plugin.saveResource("config.yml"));
             } catch (IOException e) {
                 PunishmentNotifier.LOGGER.error("Could not load config.yml", e);
                 sender.sendMessage(Component.text("Could not reload config.yml. Please check the console."));

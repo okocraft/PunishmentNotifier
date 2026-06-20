@@ -22,15 +22,14 @@ import java.util.Locale;
 
 public class PunishmentListener {
 
-
     private final ProxyServer proxy;
     private final LibertyBans libertyBans;
     private final PlayerNotifier playerNotifier;
-    private final Config.PunishmentNotification config;
+    private final Config.Notifications.PunishmentNotification config;
 
     private WebhookClient webhook;
 
-    public PunishmentListener(ProxyServer proxy, LibertyBans libertyBans, PlayerNotifier playerNotifier, Config.PunishmentNotification config) {
+    public PunishmentListener(ProxyServer proxy, LibertyBans libertyBans, PlayerNotifier playerNotifier, Config.Notifications.PunishmentNotification config) {
         this.proxy = proxy;
         this.libertyBans = libertyBans;
         this.playerNotifier = playerNotifier;
@@ -124,11 +123,9 @@ public class PunishmentListener {
     public void startWebhookIfEnabled() {
         this.shutdownWebhookIfRunning();
 
-        var url = this.config.webhookUrl();
-
-        if (!url.isEmpty()) {
-            this.webhook = new WebhookClientBuilder(url)
-                    .setThreadId(this.config.threadId())
+        if (!this.config.webhookUrl.isEmpty()) {
+            this.webhook = new WebhookClientBuilder(this.config.webhookUrl)
+                    .setThreadId(this.config.threadId)
                     .setThreadFactory(r -> new Thread(r, "Punishment-Notification-Thread"))
                     .setWait(true).build();
         }

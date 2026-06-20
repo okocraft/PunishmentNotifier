@@ -39,11 +39,11 @@ public class AltNotifier {
     private final LibertyBans libertyBans;
     private final MapDataFile<UUID, String> dataFile;
     private final BiConsumer<Runnable, Duration> asyncExecutor;
-    private final Config.AltNotification config;
+    private final Config.Notifications.AltNotification config;
     private final WebhookClient webhook;
     private final Map<UUID, String> notifiedUuids = new ConcurrentHashMap<>();
 
-    public AltNotifier(@NotNull Config.AltNotification config, WebhookClient webhook, LibertyBans libertyBans, Path dataDirectory, BiConsumer<Runnable, Duration> asyncExecutor) {
+    public AltNotifier(@NotNull Config.Notifications.AltNotification config, WebhookClient webhook, LibertyBans libertyBans, Path dataDirectory, BiConsumer<Runnable, Duration> asyncExecutor) {
         this.config = config;
         this.webhook = webhook;
         this.libertyBans = libertyBans;
@@ -92,7 +92,7 @@ public class AltNotifier {
 
             var info = this.toAccountInfo(alt);
 
-            if (!info.banned() && (this.config.onlyBannedAlt() || (this.config.onlyStrongPossibility() && info.merePossibility()))) {
+            if (!info.banned() && (this.config.onlyBannedAlt || (this.config.onlyStrongPossibility && info.merePossibility()))) {
                 continue;
             }
 
