@@ -1,7 +1,7 @@
 package net.okocraft.punishmentnotifier;
 
-import club.minnced.discord.webhook.WebhookClientBuilder;
 import com.google.inject.Inject;
+import net.okocraft.punishmentnotifier.webhook.DiscordWebhookClient;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
@@ -141,7 +141,7 @@ public class PunishmentNotifier {
         var url = config.webhookUrl;
 
         if (url != null && !url.isEmpty()) {
-            var webhook = new WebhookClientBuilder(url).setThreadId(config.threadId).build();
+            var webhook = new DiscordWebhookClient(url, config.threadId);
             var notifier = new AltNotifier(config, webhook, this.libertyBans, this.dataDirectory, this.asyncExecutor);
             notifier.load();
             this.proxy.getEventManager().register(this, notifier);

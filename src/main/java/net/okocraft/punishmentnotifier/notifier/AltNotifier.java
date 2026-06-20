@@ -1,10 +1,8 @@
 package net.okocraft.punishmentnotifier.notifier;
 
-import club.minnced.discord.webhook.WebhookClient;
-import club.minnced.discord.webhook.send.WebhookEmbed;
-import club.minnced.discord.webhook.send.WebhookEmbedBuilder;
-import club.minnced.discord.webhook.send.WebhookMessageBuilder;
 import com.velocitypowered.api.event.Subscribe;
+import net.okocraft.punishmentnotifier.webhook.DiscordWebhookClient;
+import net.okocraft.punishmentnotifier.webhook.WebhookMessage;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
 import net.okocraft.punishmentnotifier.PunishmentNotifier;
 import net.okocraft.punishmentnotifier.config.Config;
@@ -40,10 +38,10 @@ public class AltNotifier {
     private final MapDataFile<UUID, String> dataFile;
     private final BiConsumer<Runnable, Duration> asyncExecutor;
     private final Config.Notifications.AltNotification config;
-    private final WebhookClient webhook;
+    private final DiscordWebhookClient webhook;
     private final Map<UUID, String> notifiedUuids = new ConcurrentHashMap<>();
 
-    public AltNotifier(@NotNull Config.Notifications.AltNotification config, WebhookClient webhook, LibertyBans libertyBans, Path dataDirectory, BiConsumer<Runnable, Duration> asyncExecutor) {
+    public AltNotifier(@NotNull Config.Notifications.AltNotification config, DiscordWebhookClient webhook, LibertyBans libertyBans, Path dataDirectory, BiConsumer<Runnable, Duration> asyncExecutor) {
         this.config = config;
         this.webhook = webhook;
         this.libertyBans = libertyBans;
@@ -126,16 +124,13 @@ public class AltNotifier {
             return;
         }
 
-        this.webhook.send(new WebhookMessageBuilder()
-                .setContent(alert ? "@here" : null)
-                .addEmbeds(new WebhookEmbedBuilder()
-                        .setColor(alert ? 0xFF0000 : 0x000000)
-                        .setTimestamp(Instant.now())
-                        .setTitle(new WebhookEmbed.EmbedTitle(alts.size() + " Alt Account(s) Detected: " + name, null)).setDescription(description.toString())
-                        .build()
-                )
-                .build()
-        );
+        this.webhook.send(new WebhookMessage.Embed(
+                alert ? "@here" : null,
+                alert ? 0xFF0000 : 0x000000,
+                Instant.now(),
+                alts.size() + " Alt Account(s) Detected: " + name,
+                description.toString()
+        ));
     }
 
     public void load() {

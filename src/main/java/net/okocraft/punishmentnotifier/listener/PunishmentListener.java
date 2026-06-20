@@ -1,8 +1,8 @@
 package net.okocraft.punishmentnotifier.listener;
 
-import club.minnced.discord.webhook.WebhookClient;
-import club.minnced.discord.webhook.WebhookClientBuilder;
 import com.velocitypowered.api.proxy.ProxyServer;
+import net.okocraft.punishmentnotifier.webhook.DiscordWebhookClient;
+import net.okocraft.punishmentnotifier.webhook.WebhookMessage;
 import net.okocraft.punishmentnotifier.config.Config;
 import net.okocraft.punishmentnotifier.notifier.PlayerNotifier;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +27,7 @@ public class PunishmentListener {
     private final PlayerNotifier playerNotifier;
     private final Config.Notifications.PunishmentNotification config;
 
-    private WebhookClient webhook;
+    private DiscordWebhookClient webhook;
 
     public PunishmentListener(ProxyServer proxy, LibertyBans libertyBans, PlayerNotifier playerNotifier, Config.Notifications.PunishmentNotification config) {
         this.proxy = proxy;
@@ -104,7 +104,7 @@ public class PunishmentListener {
                   + " " + p.getReason() + " #" + p.getIdentifier() + " (By " + operatorName + ")";
         }
 
-        this.webhook.send(log);
+        this.webhook.send(new WebhookMessage.Text(log));
     }
 
     private void sendPardonLog(Punishment p, String playerName, String operatorName) {
@@ -113,7 +113,7 @@ public class PunishmentListener {
         }
 
         String log = "[`" + playerName + "`] **UN" + p.getType().name() + "** " + p.getReason() + " #" + p.getIdentifier() + " (By " + operatorName + ")";
-        this.webhook.send(log);
+        this.webhook.send(new WebhookMessage.Text(log));
     }
 
     public boolean isRunning() {
@@ -124,10 +124,7 @@ public class PunishmentListener {
         this.shutdownWebhookIfRunning();
 
         if (!this.config.webhookUrl.isEmpty()) {
-            this.webhook = new WebhookClientBuilder(this.config.webhookUrl)
-                    .setThreadId(this.config.threadId)
-                    .setThreadFactory(r -> new Thread(r, "Punishment-Notification-Thread"))
-                    .setWait(true).build();
+            this.webhook = new DiscordWebhookClient(this.config.webhookUrl, this.config.threadId);
         }
     }
 
