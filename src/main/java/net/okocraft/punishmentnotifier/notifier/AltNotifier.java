@@ -179,7 +179,7 @@ public class AltNotifier {
 
     private boolean hasNotified(UUID uuid, InetAddress address) {
         var raw = new String(Base64.getEncoder().encode(address.getAddress()), StandardCharsets.UTF_8);
-        return raw.equals(this.notifiedUuids.putIfAbsent(uuid, raw));
+        return raw.equals(this.notifiedUuids.put(uuid, raw));
     }
 
     private record AccountInfo(String name, boolean banned, boolean merePossibility) {
